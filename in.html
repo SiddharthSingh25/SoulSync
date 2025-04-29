@@ -1,0 +1,2469 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Soul Sync</title>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            background-color: #121212;
+            color: white;
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .app-container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        .animated-background {
+            text-align: center;
+            margin-bottom: 40px;
+            padding: 20px;
+        }
+
+        .animated-title {
+            font-size: 50px;
+            font-weight: bold;
+            color: #39FF14;
+            text-shadow: 0px 0px 20px #39FF14;
+            animation: glow 2s infinite alternate;
+        }
+
+        @keyframes glow {
+            0% { text-shadow: 0px 0px 10px #39FF14; }
+            100% { text-shadow: 0px 0px 20px #39FF14; }
+        }
+
+        .container {
+            padding: 30px;
+            max-width: 500px;
+            margin: 0 auto;
+        }
+
+        .hidden {
+            display: none !important;
+        }
+
+        input, select {
+            width: 100%;
+            padding: 12px;
+            margin: 10px 0;
+            border-radius: 5px;
+            border: 1px solid rgba(57, 255, 20, 0.3);
+            background: rgba(0, 0, 0, 0.2);
+            color: white;
+        }
+
+        /* Calendar input specific styles */
+        input[type="date"] {
+            background-color: rgba(40, 40, 40, 0.8);
+            color: #e0e0e0;
+        }
+
+        input[type="date"]::-webkit-calendar-picker-indicator {
+            filter: invert(0.8);
+            cursor: pointer;
+        }
+
+        input[type="date"]::-webkit-datetime-edit {
+            color: #e0e0e0;
+        }
+
+        input[type="date"]::-webkit-datetime-edit-fields-wrapper {
+            background-color: rgba(40, 40, 40, 0.8);
+        }
+
+        input[type="date"]::-webkit-inner-spin-button {
+            display: none;
+        }
+
+        button {
+            width: 100%;
+            padding: 12px;
+            background-color: #39FF14;
+            border: none;
+            color: black;
+            font-size: 18px;
+            cursor: pointer;
+            border-radius: 5px;
+            margin: 10px 0;
+        }
+
+        button:hover {
+            background-color: #50FF30;
+        }
+
+        /* Updated Dashboard Styles */
+        .dashboard-content {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 30px;
+            margin: 40px auto;
+            max-width: 800px;
+            position: relative;
+        }
+
+        .dashboard-card {
+            background: rgba(57, 255, 20, 0.1);
+            padding: 30px;
+            border-radius: 50%;
+            border: 2px solid rgba(57, 255, 20, 0.3);
+            aspect-ratio: 1;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            transition: transform 0.3s ease, box-shadow 0.3s ease;
+        }
+
+        .dashboard-card:hover {
+            transform: translateY(-10px);
+            box-shadow: 0 10px 20px rgba(57, 255, 20, 0.2);
+        }
+
+        .dashboard-card.profile-card {
+            position: fixed;
+            top: 100px;
+            right: 40px;
+            width: 120px;
+            height: 120px;
+            font-size: 0.9em;
+            background: rgba(57, 255, 20, 0.2);
+        }
+
+        /* Updated Profile Styles */
+        .profile-image-section {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        .profile-image-container {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            margin: 0 auto;
+            overflow: hidden;
+            border: 2px solid #39FF14;
+        }
+
+        .profile-image {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+        }
+
+        .profile-image-upload {
+            display: none;
+        }
+
+        .profile-image-label {
+            cursor: pointer;
+            padding: 8px 15px;
+            background: rgba(57, 255, 20, 0.2);
+            border: 1px solid #39FF14;
+            border-radius: 5px;
+            display: inline-block;
+            margin-top: 10px;
+            font-size: 14px;
+        }
+
+        .profile-field {
+            margin-bottom: 20px;
+        }
+
+        .profile-field label {
+            display: block;
+            margin-bottom: 8px;
+            color: #39FF14;
+            font-size: 14px;
+        }
+
+        .profile-field input,
+        .profile-field select,
+        .profile-field textarea {
+            width: 100%;
+            padding: 10px;
+            border-radius: 5px;
+            border: 1px solid rgba(57, 255, 20, 0.3);
+            background: rgba(0, 0, 0, 0.2);
+            color: white;
+            font-size: 14px;
+        }
+
+        .back-button {
+            background-color: rgba(255, 255, 255, 0.2);
+            border: 1px solid white;
+            margin-bottom: 10px;
+            width: auto;
+            padding: 8px 15px;
+            font-size: 14px;
+        }
+
+        /* Profile View Styles */
+        #profile-container {
+            font-size: 14px;
+        }
+
+        #profile-container p {
+            margin-bottom: 10px;
+        }
+
+        #profile-container strong {
+            color: #39FF14;
+            margin-right: 10px;
+        }
+
+        .save-button {
+            background-color: #00aa00;
+            margin-top: 20px;
+            font-size: 16px;
+            padding: 12px;
+        }
+
+        /* Add spacing between sections */
+        h2 {
+            margin-bottom: 30px;
+            color: #39FF14;
+        }
+
+        p {
+            margin-bottom: 20px;
+        }
+
+        .register-text span {
+            color: #39FF14;
+            cursor: pointer;
+        }
+
+        .register-text span:hover {
+            color: #50FF30;
+        }
+
+        .forgot-password {
+            color: #FF6B6B;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 10px;
+            display: block;
+            text-align: right;
+        }
+
+        .forgot-password:hover {
+            color: #FF8E8E;
+        }
+
+        .password-container {
+            position: relative;
+            width: 100%;
+        }
+
+        .password-container input {
+            padding-right: 40px; /* Make space for the eye icon */
+            width: 100%;
+        }
+
+        .toggle-password {
+            position: absolute;
+            right: 12px;
+            top: 50%;
+            transform: translateY(-50%);
+            background: none;
+            border: none;
+            color: #FF6B6B;
+            cursor: pointer;
+            padding: 0;
+            font-size: 16px;
+            width: 24px;
+            height: 24px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .toggle-password:hover {
+            color: #FF8E8E;
+            background: rgba(255, 107, 107, 0.1);
+            border-radius: 50%;
+        }
+
+        /* Depression Test Styles */
+        .depression-test-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1000;
+            overflow-y: auto;
+            opacity: 0;
+            transition: opacity 0.3s ease;
+        }
+
+        .depression-test-content {
+            background-color: #121212;
+            margin: 50px auto;
+            padding: 30px;
+            width: 80%;
+            max-width: 800px;
+            border-radius: 10px;
+            border: 2px solid rgba(57, 255, 20, 0.3);
+            color: white;
+            transform: translateY(-20px);
+            transition: transform 0.3s ease;
+        }
+
+        .depression-test-modal[style*="display: block"] .depression-test-content {
+            transform: translateY(0);
+        }
+
+        .depression-test-question {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: rgba(57, 255, 20, 0.1);
+            border-radius: 5px;
+        }
+
+        .depression-test-question strong {
+            color: #39FF14;
+            display: block;
+            margin-bottom: 10px;
+        }
+
+        .depression-test-option {
+            display: block;
+            margin: 8px 0;
+            padding: 8px;
+            cursor: pointer;
+            border-radius: 5px;
+            transition: background-color 0.3s;
+        }
+
+        .depression-test-option:hover {
+            background-color: rgba(57, 255, 20, 0.2);
+        }
+
+        .depression-test-option input[type="radio"] {
+            margin-right: 10px;
+        }
+
+        .depression-test-result {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(57, 255, 20, 0.1);
+            border-radius: 5px;
+            text-align: center;
+        }
+
+        .depression-test-result strong {
+            color: #39FF14;
+            font-size: 24px;
+        }
+
+        .close-test {
+            position: absolute;
+            top: 20px;
+            right: 20px;
+            color: white;
+            font-size: 30px;
+            cursor: pointer;
+        }
+
+        .close-test:hover {
+            color: #39FF14;
+        }
+
+        .depression-history {
+            margin-top: 30px;
+            padding: 20px;
+            background: rgba(57, 255, 20, 0.1);
+            border-radius: 5px;
+        }
+
+        .depression-history h3 {
+            color: #39FF14;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .depression-chart-container {
+            width: 100%;
+            height: 300px;
+            margin: 20px 0;
+        }
+
+        .depression-history-list {
+            margin-top: 20px;
+        }
+
+        .depression-history-item {
+            padding: 10px;
+            margin: 5px 0;
+            background: rgba(57, 255, 20, 0.05);
+            border-radius: 5px;
+            border-left: 3px solid #39FF14;
+        }
+
+        /* Admin Page Styles */
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 30px;
+        }
+
+        .admin-stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .stat-card {
+            background: rgba(57, 255, 20, 0.1);
+            padding: 20px;
+            border-radius: 10px;
+            text-align: center;
+            border: 1px solid rgba(57, 255, 20, 0.3);
+        }
+
+        .stat-card h3 {
+            color: #39FF14;
+            margin-bottom: 10px;
+        }
+
+        .stat-card p {
+            font-size: 24px;
+            font-weight: bold;
+        }
+
+        .admin-filters {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 20px;
+        }
+
+        .admin-filters input,
+        .admin-filters select {
+            flex: 1;
+        }
+
+        .admin-users-list {
+            margin-bottom: 30px;
+        }
+
+        .admin-users-list table {
+            width: 100%;
+            border-collapse: collapse;
+            background: rgba(0, 0, 0, 0.2);
+        }
+
+        .admin-users-list th,
+        .admin-users-list td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid rgba(57, 255, 20, 0.3);
+        }
+
+        .admin-users-list th {
+            color: #39FF14;
+            font-weight: bold;
+        }
+
+        .admin-users-list tr:hover {
+            background: rgba(57, 255, 20, 0.05);
+        }
+
+        .admin-charts {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 20px;
+        }
+
+        .chart-container {
+            background: rgba(0, 0, 0, 0.2);
+            padding: 20px;
+            border-radius: 10px;
+            border: 1px solid rgba(57, 255, 20, 0.3);
+        }
+
+        .chart-container h3 {
+            color: #39FF14;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+
+        .action-buttons {
+            display: flex;
+            gap: 5px;
+        }
+
+        .action-buttons button {
+            padding: 5px 10px;
+            font-size: 12px;
+            margin: 0;
+        }
+
+        .view-details-btn {
+            background-color: #39FF14;
+        }
+
+        .delete-user-btn {
+            background-color: #FF6B6B;
+        }
+
+        .admin-login-btn {
+            background-color: #FF6B6B;
+            margin-top: 10px;
+        }
+
+        .admin-login-btn:hover {
+            background-color: #FF8E8E;
+        }
+
+        /* Updated Color Variables */
+        :root {
+            --neon-blue: #00f3ff;
+            --genz-orange: #ff6b35;
+            --dark-bg: #121212;
+        }
+
+        /* Game Styles */
+        .games-container {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.95);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .games-content {
+            position: relative;
+            width: 90%;
+            max-width: 800px;
+            margin: 50px auto;
+            background: var(--dark-bg);
+            padding: 30px;
+            border-radius: 15px;
+            border: 2px solid var(--neon-blue);
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.2);
+        }
+
+        .games-header {
+            color: var(--neon-blue);
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 28px;
+            text-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
+        }
+
+        .game-option {
+            background: rgba(0, 243, 255, 0.1);
+            padding: 30px;
+            border-radius: 15px;
+            border: 2px solid var(--neon-blue);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .game-option:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 5px 15px rgba(0, 243, 255, 0.3);
+            background: rgba(0, 243, 255, 0.15);
+        }
+
+        .game-option h3 {
+            color: var(--neon-blue);
+            margin-bottom: 15px;
+            font-size: 24px;
+        }
+
+        /* Gratitude Game Styles */
+        .game-area {
+            width: 100%;
+            height: 400px;
+            background: rgba(0, 0, 0, 0.3);
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+            border: 2px solid var(--neon-blue);
+        }
+
+        .word {
+            position: absolute;
+            padding: 10px 20px;
+            background: rgba(0, 243, 255, 0.2);
+            border-radius: 20px;
+            color: var(--neon-blue);
+            font-size: 18px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            border: 1px solid var(--neon-blue);
+            animation: float 3s infinite alternate;
+            text-shadow: 0 0 5px rgba(0, 243, 255, 0.5);
+        }
+
+        .word:hover {
+            background: rgba(0, 243, 255, 0.3);
+            transform: scale(1.1);
+            box-shadow: 0 0 15px rgba(0, 243, 255, 0.4);
+        }
+
+        .game-score {
+            background: rgba(0, 243, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            margin: 20px 0;
+            text-align: center;
+            font-size: 20px;
+            color: var(--neon-blue);
+            border: 1px solid var(--neon-blue);
+        }
+
+        /* Memory Game Styles */
+        .memory-game-board {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 15px;
+            margin: 20px auto;
+            max-width: 500px;
+        }
+
+        .memory-card {
+            width: 100%;
+            aspect-ratio: 1;
+            background: rgba(0, 243, 255, 0.2);
+            border-radius: 15px;
+            font-size: 24px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+            transition: all 0.3s ease;
+            color: var(--neon-blue);
+            border: 2px solid var(--neon-blue);
+            transform-style: preserve-3d;
+            transform: perspective(1000px);
+        }
+
+        .memory-card.flipped, .memory-card.matched {
+            background: rgba(0, 243, 255, 0.4);
+            transform: rotateY(180deg);
+        }
+
+        .memory-status {
+            color: var(--neon-blue);
+            font-size: 20px;
+            margin: 20px 0;
+            text-align: center;
+            background: rgba(0, 243, 255, 0.1);
+            padding: 15px;
+            border-radius: 10px;
+            border: 1px solid var(--neon-blue);
+        }
+
+        .game-btn {
+            padding: 12px 30px;
+            font-size: 18px;
+            background: rgba(0, 243, 255, 0.2);
+            border: 2px solid var(--neon-blue);
+            color: var(--neon-blue);
+            border-radius: 10px;
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .game-btn:hover {
+            background: rgba(0, 243, 255, 0.3);
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(0, 243, 255, 0.2);
+        }
+
+        .back-to-games {
+            color: var(--neon-blue);
+        }
+
+        .back-to-games:hover {
+            color: var(--genz-orange);
+        }
+
+        .close-games {
+            color: var(--neon-blue);
+        }
+
+        .close-games:hover {
+            color: var(--genz-orange);
+        }
+
+        /* Game Selection Styles */
+        .game-selection {
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 50px;
+            margin: 40px 0;
+            flex-wrap: wrap;
+        }
+
+        .game-option {
+            width: 200px;
+            height: 200px;
+            background: rgba(0, 243, 255, 0.1);
+            padding: 20px;
+            border-radius: 50%;
+            border: 2px solid var(--neon-blue);
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .game-option::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            left: -50%;
+            width: 200%;
+            height: 200%;
+            background: radial-gradient(circle, rgba(0, 243, 255, 0.1) 0%, transparent 70%);
+            transform: rotate(45deg);
+            transition: all 0.3s ease;
+        }
+
+        .game-option:hover::before {
+            transform: rotate(225deg);
+        }
+
+        .game-option:hover {
+            transform: scale(1.05);
+            box-shadow: 0 0 30px rgba(0, 243, 255, 0.3);
+            background: rgba(0, 243, 255, 0.15);
+        }
+
+        .game-option .game-icon {
+            font-size: 50px;
+            margin-bottom: 15px;
+            text-shadow: 0 0 10px rgba(0, 243, 255, 0.5);
+        }
+
+        .game-option h3 {
+            color: var(--neon-blue);
+            margin-bottom: 10px;
+            font-size: 20px;
+        }
+
+        .game-option p {
+            color: #fff;
+            font-size: 14px;
+            opacity: 0.8;
+        }
+
+        /* Memory Game Updates */
+        .memory-card {
+            width: 100%;
+            aspect-ratio: 1;
+            background: rgba(0, 243, 255, 0.2);
+            border-radius: 15px;
+            font-size: 40px;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            cursor: pointer;
+            user-select: none;
+            position: relative;
+            transition: all 0.3s ease;
+            color: var(--neon-blue);
+            border: 2px solid var(--neon-blue);
+            transform-style: preserve-3d;
+            transform: perspective(1000px);
+        }
+
+        .memory-card .hidden-text {
+            visibility: hidden;
+            backface-visibility: hidden;
+            transform: rotateY(180deg);
+            font-size: 40px;
+        }
+
+        /* Mind Garden Game Styles */
+        .mind-garden {
+            display: none;
+            text-align: center;
+        }
+
+        .mind-garden h3 {
+            color: var(--neon-blue);
+            margin-bottom: 20px;
+            font-size: 24px;
+        }
+
+        .plant {
+            width: 150px;
+            height: 150px;
+            margin: 20px auto;
+            background-image: url('https://cdn-icons-png.flaticon.com/512/2904/2904306.png');
+            background-size: contain;
+            background-repeat: no-repeat;
+            animation: grow 2s ease-in-out;
+            filter: drop-shadow(0 0 10px rgba(0, 243, 255, 0.5));
+        }
+
+        @keyframes grow {
+            0% { transform: scale(0.3); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .mood-select {
+            padding: 12px;
+            font-size: 16px;
+            border-radius: 10px;
+            border: 2px solid var(--neon-blue);
+            background: rgba(0, 243, 255, 0.1);
+            color: var(--neon-blue);
+            margin: 10px 0;
+            width: 200px;
+            cursor: pointer;
+        }
+
+        .mood-select option {
+            background: var(--dark-bg);
+            color: var(--neon-blue);
+        }
+
+        .garden-box {
+            margin: 30px auto;
+            border: 2px solid var(--neon-blue);
+            padding: 30px;
+            border-radius: 15px;
+            background: rgba(0, 243, 255, 0.05);
+            max-width: 400px;
+            box-shadow: 0 0 20px rgba(0, 243, 255, 0.1);
+        }
+
+        .quote {
+            margin-top: 30px;
+            font-style: italic;
+            font-size: 18px;
+            color: var(--neon-blue);
+            text-shadow: 0 0 5px rgba(0, 243, 255, 0.3);
+        }
+    </style>
+</head>
+<body>
+    <div class="animated-background">
+        <h1 class="animated-title">Soul Sync</h1>
+    </div>
+
+    <div class="app-container">
+        <!-- Login Page -->
+        <div id="login-container" class="container">
+            <h2>Welcome to Soul Sync</h2>
+            <p>Please login to explore mental wellness tools</p>
+            <input type="text" id="login-username" placeholder="Username">
+            <div class="password-container">
+                <input type="password" id="login-password" placeholder="Password">
+                <button type="button" class="toggle-password" onclick="togglePassword('login-password')">👁️</button>
+            </div>
+            <button onclick="login()">Login</button>
+            <p class="register-text">Don't have an account, create one? <span onclick="showSignup()">Register</span></p>
+            <a class="forgot-password" onclick="forgotPassword()">Forgot Password?</a>
+            <!-- <button class="admin-login-btn" onclick="showAdminLogin()">Admin Login</button> -->
+        </div>
+
+        <!-- Signup Page -->
+        <div id="signup-container" class="container hidden">
+            <h2>Create Your Profile</h2>
+            <div class="profile-field">
+                <label for="signup-email">Email</label>
+                <input type="email" id="signup-email" placeholder="Enter your email" required>
+            </div>
+            <div class="profile-field">
+                <label for="signup-full-name">Full Name</label>
+                <input type="text" id="signup-full-name" placeholder="Enter your full name" required>
+            </div>
+            <div class="profile-field">
+                <label for="signup-dob">Date of Birth</label>
+                <input type="date" id="signup-dob">
+            </div>
+            <div class="profile-field">
+                <label for="signup-gender">Gender</label>
+                <select id="signup-gender">
+                    <option value="">Select Gender</option>
+                    <option value="Male">Male</option>
+                    <option value="Female">Female</option>
+                    <option value="Other">Other</option>
+                </select>
+            </div>
+            <div class="profile-field">
+                <label for="signup-education">Education</label>
+                <select id="signup-education" onchange="toggleOtherEducation()">
+                    <option value="">Select Education</option>
+                    <option value="10th (High School)">10th (High School)</option>
+                    <option value="12th (Senior Secondary)">12th (Senior Secondary)</option>
+                    <option value="Diploma">Diploma</option>
+                    <option value="Bachelor's Degree">Bachelor's Degree</option>
+                    <option value="Master's Degree">Master's Degree</option>
+                    <option value="PhD">PhD</option>
+                    <option value="Currently Studying">Currently Studying</option>
+                    <option value="Job / Working Professional">Job / Working Professional</option>
+                    <option value="Others">Others (Be Specific)</option>
+                </select>
+                <input type="text" id="other-education" class="hidden" placeholder="Please specify your education">
+            </div>
+            <div class="profile-field">
+                <label for="signup-job">Job Profile</label>
+                <input type="text" id="signup-job" placeholder="Current job position (if working)">
+            </div>
+            <div class="profile-field">
+                <label for="signup-location">Location</label>
+                <input type="text" id="signup-location" placeholder="Your current location">
+            </div>
+            <div class="profile-field">
+                <label for="signup-health">Health Issues</label>
+                <textarea id="signup-health" placeholder="Any birth health issues or current health conditions"></textarea>
+            </div>
+            <button onclick="showCredentials()">Next</button>
+        </div>
+
+        <!-- Credentials Page -->
+        <div id="credentials-container" class="container hidden">
+            <h2>Set Your Login Credentials</h2>
+            <div class="profile-field">
+                <label for="signup-username">Username</label>
+                <input type="text" id="signup-username" placeholder="Choose a username">
+            </div>
+            <div class="profile-field">
+                <label for="signup-password">Password</label>
+                <div class="password-container">
+                    <input type="password" id="signup-password" placeholder="Create a password">
+                    <button type="button" class="toggle-password" onclick="togglePassword('signup-password')">👁️</button>
+                </div>
+            </div>
+            <div class="profile-field">
+                <label for="signup-confirm-password">Confirm Password</label>
+                <div class="password-container">
+                    <input type="password" id="signup-confirm-password" placeholder="Confirm your password">
+                    <button type="button" class="toggle-password" onclick="togglePassword('signup-confirm-password')">👁️</button>
+                </div>
+            </div>
+            <button onclick="completeRegistration()">Complete Registration</button>
+        </div>
+
+        <!-- Details Page -->
+        <div id="details-container" class="container hidden">
+            <h2>Enter Your Details</h2>
+            <input type="text" id="full-name" placeholder="Full Name">
+            <input type="date" id="dob">
+            <select id="gender">
+                <option value="">Select Gender</option>
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+                <option value="Other">Other</option>
+            </select>
+            <input type="number" id="height" placeholder="Height (cm)">
+            <input type="number" id="weight" placeholder="Weight (kg)">
+            <button onclick="showProfile()">Submit</button>
+        </div>
+
+        <!-- Enhanced Profile Edit Page -->
+        <div id="profile-edit-container" class="container hidden">
+            <button class="back-button" onclick="backToDashboard()">Back to Dashboard</button>
+            <h2>Edit Profile</h2>
+            <div class="profile-edit-container">
+                <div class="profile-image-section">
+                    <div class="profile-image-container">
+                        <img id="profile-pic" src="https://via.placeholder.com/150" alt="Profile Picture" class="profile-image">
+                    </div>
+                    <input type="file" id="profile-image-upload" class="profile-image-upload" accept="image/*" onchange="previewImage(event)">
+                    <label for="profile-image-upload" class="profile-image-label">Upload Photo</label>
+                </div>
+
+                <div class="profile-field">
+                    <label for="edit-full-name">Full Name</label>
+                    <input type="text" id="edit-full-name" placeholder="Enter your full name">
+                </div>
+
+                <div class="profile-field">
+                    <label for="edit-dob">Date of Birth</label>
+                    <input type="date" id="edit-dob">
+                </div>
+
+                <div class="profile-field">
+                    <label for="edit-gender">Gender</label>
+                    <select id="edit-gender">
+                        <option value="">Select Gender</option>
+                        <option value="Male">Male</option>
+                        <option value="Female">Female</option>
+                        <option value="Other">Other</option>
+                    </select>
+                </div>
+
+                <div class="profile-field">
+                    <label for="edit-education">Education</label>
+                    <input type="text" id="edit-education" placeholder="Your highest education">
+                </div>
+
+                <div class="profile-field">
+                    <label for="edit-job">Job Profile</label>
+                    <input type="text" id="edit-job" placeholder="Current job position (if working)">
+                </div>
+
+                <div class="profile-field">
+                    <label for="edit-location">Location</label>
+                    <input type="text" id="edit-location" placeholder="Your current location">
+                </div>
+
+                <div class="profile-field">
+                    <label for="edit-health">Health Issues</label>
+                    <textarea id="edit-health" placeholder="Any birth health issues or current health conditions"></textarea>
+                </div>
+
+                <button class="save-button" onclick="saveProfile()">Save Profile</button>
+            </div>
+        </div>
+
+        <!-- Updated Profile View Page -->
+        <div id="profile-container" class="container hidden">
+            <button class="back-button" onclick="backToDashboard()">Back to Dashboard</button>
+            <div class="profile-image-section">
+                <div class="profile-image-container">
+                    <img id="profile-view-pic" src="https://via.placeholder.com/150" alt="Profile Picture" class="profile-image">
+                </div>
+            </div>
+            <h2>User Profile</h2>
+            <div style="text-align: left;">
+                <p><strong>Name:</strong> <span id="profile-name"></span></p>
+                <p><strong>Age:</strong> <span id="profile-age"></span> years old</p>
+                <p><strong>Gender:</strong> <span id="profile-gender"></span></p>
+                <p><strong>Education:</strong> <span id="profile-education"></span></p>
+                <p><strong>Job Profile:</strong> <span id="profile-job"></span></p>
+                <p><strong>Location:</strong> <span id="profile-location"></span></p>
+                <p><strong>Health Issues:</strong> <span id="profile-health"></span></p>
+                <p><strong>Last Depression Test:</strong> <span id="profile-last-test"></span></p>
+                <p><strong>Depression Level:</strong> <span id="profile-depression-level"></span></p>
+                <p><strong>Depression Score:</strong> <span id="profile-depression-score"></span></p>
+            </div>
+            <input type="hidden" id="profile-dob">
+            <button onclick="editProfile()" style="margin-top: 20px;">Edit Profile</button>
+            <button onclick="showDepressionTest()" style="margin-top: 20px; background-color: #FF6B6B;">Take Depression Test</button>
+        </div>
+
+        <!-- Dashboard Page -->
+        <div id="dashboard-container" class="container hidden">
+            <h2>Welcome to Your Dashboard</h2>
+            <div class="dashboard-content">
+                <div class="dashboard-card">
+                    <h3>Mental Wellness</h3>
+                    <p>Track your daily mood and emotions</p>
+                    <button onclick="showMoodTracker()">Open Mood Tracker</button>
+                </div>
+                <div class="dashboard-card">
+                    <h3>Meditation</h3>
+                    <p>Start your mindfulness journey</p>
+                    <button onclick="startMeditation()">Begin Meditation</button>
+                </div>
+                <div class="dashboard-card">
+                    <h3>Journal</h3>
+                    <p>Write your thoughts and feelings</p>
+                    <button onclick="openJournal()">Open Journal</button>
+                </div>
+                <div class="dashboard-card">
+                    <h3>Games</h3>
+                    <p>Play fun mental wellness games</p>
+                    <button onclick="showGames()">Play Games</button>
+                </div>
+                <div class="dashboard-card profile-card">
+                    <h3>Profile</h3>
+                    <button onclick="showProfile()">View</button>
+                </div>
+            </div>
+            <button class="logout-btn" onclick="logout()">Logout</button>
+        </div>
+
+        <!-- Admin Login Page -->
+        <div id="admin-login-container" class="container hidden">
+            <h2>Admin Login</h2>
+            <input type="text" id="admin-username" placeholder="Admin Username">
+            <div class="password-container">
+                <input type="password" id="admin-password" placeholder="Admin Password">
+                <button type="button" class="toggle-password" onclick="togglePassword('admin-password')">👁️</button>
+            </div>
+            <button onclick="adminLogin()">Login</button>
+            <button class="back-button" onclick="backToUserLogin()">Back to User Login</button>
+        </div>
+
+        <!-- Admin Dashboard -->
+        <div id="admin-dashboard" class="container hidden">
+            <div class="admin-header">
+                <h2>Admin Dashboard</h2>
+                <button class="logout-btn" onclick="adminLogout()">Logout</button>
+            </div>
+            
+            <div class="admin-stats">
+                <div class="stat-card">
+                    <h3>Total Users</h3>
+                    <p id="total-users">0</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Active Users</h3>
+                    <p id="active-users">0</p>
+                </div>
+                <div class="stat-card">
+                    <h3>Average Depression Score</h3>
+                    <p id="avg-depression-score">0</p>
+                </div>
+            </div>
+
+            <div class="admin-filters">
+                <input type="text" id="user-search" placeholder="Search users..." oninput="filterUsers()">
+                <select id="depression-filter" onchange="filterUsers()">
+                    <option value="">All Depression Levels</option>
+                    <option value="Minimal or No Depression">Minimal or No Depression</option>
+                    <option value="Mild Depression">Mild Depression</option>
+                    <option value="Moderate Depression">Moderate Depression</option>
+                    <option value="Moderately Severe Depression">Moderately Severe Depression</option>
+                    <option value="Severe Depression">Severe Depression</option>
+                </select>
+            </div>
+
+            <div class="admin-users-list">
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Username</th>
+                            <th>Name</th>
+                            <th>Email</th>
+                            <th>Last Test</th>
+                            <th>Depression Level</th>
+                            <th>Score</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-table-body">
+                    </tbody>
+                </table>
+            </div>
+
+            <div class="admin-charts">
+                <div class="chart-container">
+                    <h3>Depression Level Distribution</h3>
+                    <canvas id="depression-distribution-chart"></canvas>
+                </div>
+                <div class="chart-container">
+                    <h3>Test Frequency</h3>
+                    <canvas id="test-frequency-chart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <!-- Depression Test Modal -->
+        <div id="depressionTestModal" class="depression-test-modal">
+            <div class="depression-test-content">
+                <span class="close-test" onclick="closeDepressionTest()">&times;</span>
+                <h2 style="color: #39FF14; text-align: center; margin-bottom: 30px;">Depression Score Test</h2>
+                <form id="depressionForm">
+                    <div id="depressionQuestions"></div>
+                    <button type="button" onclick="calculateDepressionScore()" style="width: 100%;">Submit</button>
+                </form>
+                <div class="depression-test-result" id="depressionResult"></div>
+            </div>
+        </div>
+
+        <!-- Games Page -->
+        <div id="gamesPage" class="games-container">
+            <div class="games-content">
+                <span class="close-games" onclick="closeGames()">&times;</span>
+                <h2 class="games-header">🎮 Mental Wellness Games</h2>
+                
+                <!-- Game Selection -->
+                <div class="game-selection">
+                    <div class="game-option" onclick="selectGame('gratitude')">
+                        <div class="game-icon">🎯</div>
+                        <h3>Gratitude Pop</h3>
+                        <p>Pop positive words and boost your mood!</p>
+                    </div>
+                    <div class="game-option" onclick="selectGame('memory')">
+                        <div class="game-icon">🧠</div>
+                        <h3>Memory Match</h3>
+                        <p>Match positive words and improve memory!</p>
+                    </div>
+                    <div class="game-option" onclick="selectGame('garden')">
+                        <div class="game-icon">🌱</div>
+                        <h3>Mind Garden</h3>
+                        <p>Grow plants based on your mood!</p>
+                    </div>
+                </div>
+
+                <!-- Gratitude Game -->
+                <div id="gratitudeGame" class="gratitude-game">
+                    <span class="back-to-games" onclick="showGameSelection()">← Back to Games</span>
+                    <h3 class="games-header">🎯 Gratitude Pop Game</h3>
+                    <div class="game-score">
+                        Score: <span id="gameScore">0</span> | Time Left: <span id="gameTime">30</span>s
+                    </div>
+                    <div id="gameArea" class="game-area"></div>
+                    <div class="game-controls">
+                        <button class="game-btn" onclick="startGratitudeGame()">Start Game</button>
+                    </div>
+                </div>
+
+                <!-- Memory Game -->
+                <div id="memoryGame" class="memory-game">
+                    <span class="back-to-games" onclick="showGameSelection()">← Back to Games</span>
+                    <h3 class="games-header">🧠 Memory Match Game</h3>
+                    <div id="memoryGameBoard" class="memory-game-board"></div>
+                    <div id="memoryStatus" class="memory-status">Find all the matches!</div>
+                    <div class="game-controls">
+                        <button class="game-btn" onclick="initMemoryGame()">Restart Game</button>
+                    </div>
+                </div>
+
+                <!-- Mind Garden Game -->
+                <div id="mindGarden" class="mind-garden">
+                    <span class="back-to-games" onclick="showGameSelection()">← Back to Games</span>
+                    <h3 class="games-header">🌱 Mind Garden</h3>
+                    <p style="color: var(--neon-blue); margin-bottom: 20px;">How are you feeling today?</p>
+
+                    <select id="moodSelect" class="mood-select">
+                        <option value="">-- Select Mood --</option>
+                        <option value="happy">😊 Happy</option>
+                        <option value="sad">😢 Sad</option>
+                        <option value="anxious">😰 Anxious</option>
+                        <option value="calm">😌 Calm</option>
+                        <option value="lonely">😔 Lonely</option>
+                    </select>
+
+                    <div class="game-controls">
+                        <button class="game-btn" onclick="growPlant()">Grow Plant</button>
+                    </div>
+
+                    <div class="garden-box" id="garden" style="display:none;">
+                        <div class="plant"></div>
+                        <div class="quote" id="quote"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Database initialization
+        let db;
+        const DB_NAME = 'SoulSyncDB';
+        const DB_VERSION = 1;
+
+        // Initialize database
+        function initDB() {
+            return new Promise((resolve, reject) => {
+                const request = indexedDB.open(DB_NAME, DB_VERSION);
+
+                request.onerror = (event) => {
+                    console.error('Database error:', event.target.error);
+                    reject(event.target.error);
+                };
+
+                request.onsuccess = (event) => {
+                    db = event.target.result;
+                    console.log('Database initialized successfully');
+                    resolve(db);
+                };
+
+                request.onupgradeneeded = (event) => {
+                    const db = event.target.result;
+
+                    // Create users store
+                    if (!db.objectStoreNames.contains('users')) {
+                        const usersStore = db.createObjectStore('users', { keyPath: 'username' });
+                        usersStore.createIndex('email', 'email', { unique: true });
+                    }
+
+                    // Create profiles store
+                    if (!db.objectStoreNames.contains('profiles')) {
+                        const profilesStore = db.createObjectStore('profiles', { keyPath: 'username' });
+                        profilesStore.createIndex('fullName', 'fullName', { unique: false });
+                    }
+
+                    // Create questionnaire store
+                    if (!db.objectStoreNames.contains('questionnaire')) {
+                        const questionnaireStore = db.createObjectStore('questionnaire', { keyPath: 'id', autoIncrement: true });
+                        questionnaireStore.createIndex('username', 'username', { unique: false });
+                        questionnaireStore.createIndex('date', 'date', { unique: false });
+                    }
+                };
+            });
+        }
+
+        // Database operations
+        const dbOperations = {
+            // User operations
+            addUser: (userData) => {
+                return new Promise((resolve, reject) => {
+                    const transaction = db.transaction(['users'], 'readwrite');
+                    const store = transaction.objectStore('users');
+                    const request = store.add(userData);
+
+                    request.onsuccess = () => resolve(request.result);
+                    request.onerror = () => reject(request.error);
+                });
+            },
+
+            getUser: (username) => {
+                return new Promise((resolve, reject) => {
+                    const transaction = db.transaction(['users'], 'readonly');
+                    const store = transaction.objectStore('users');
+                    const request = store.get(username);
+
+                    request.onsuccess = () => resolve(request.result);
+                    request.onerror = () => reject(request.error);
+                });
+            },
+
+            // Profile operations
+            addProfile: (profileData) => {
+                return new Promise((resolve, reject) => {
+                    const transaction = db.transaction(['profiles'], 'readwrite');
+                    const store = transaction.objectStore('profiles');
+                    const request = store.put(profileData);
+
+                    request.onsuccess = () => resolve(request.result);
+                    request.onerror = () => reject(request.error);
+                });
+            },
+
+            getProfile: (username) => {
+                return new Promise((resolve, reject) => {
+                    const transaction = db.transaction(['profiles'], 'readonly');
+                    const store = transaction.objectStore('profiles');
+                    const request = store.get(username);
+
+                    request.onsuccess = () => resolve(request.result);
+                    request.onerror = () => reject(request.error);
+                });
+            },
+
+            // Questionnaire operations
+            addQuestionnaireResult: (result) => {
+                return new Promise((resolve, reject) => {
+                    const transaction = db.transaction(['questionnaire'], 'readwrite');
+                    const store = transaction.objectStore('questionnaire');
+                    const request = store.add(result);
+
+                    request.onsuccess = () => resolve(request.result);
+                    request.onerror = () => reject(request.error);
+                });
+            },
+
+            getQuestionnaireHistory: (username) => {
+                return new Promise((resolve, reject) => {
+                    const transaction = db.transaction(['questionnaire'], 'readonly');
+                    const store = transaction.objectStore('questionnaire');
+                    const index = store.index('username');
+                    const request = index.getAll(username);
+
+                    request.onsuccess = () => resolve(request.result);
+                    request.onerror = () => reject(request.error);
+                });
+            }
+        };
+
+        // Initialize database when page loads
+        window.onload = async function() {
+            try {
+                await initDB();
+            document.getElementById("signup-container").classList.add("hidden");
+                document.getElementById("credentials-container").classList.add("hidden");
+                document.getElementById("profile-container").classList.add("hidden");
+                document.getElementById("dashboard-container").classList.add("hidden");
+                document.getElementById("depressionTestModal").style.display = 'none';
+                document.getElementById("login-container").classList.remove("hidden");
+            } catch (error) {
+                console.error('Failed to initialize database:', error);
+                alert('Failed to initialize database. Please refresh the page.');
+            }
+        };
+
+        // Update registration function to use database
+        async function completeRegistration() {
+            const username = document.getElementById("signup-username").value;
+            const password = document.getElementById("signup-password").value;
+            const confirmPassword = document.getElementById("signup-confirm-password").value;
+            const email = document.getElementById("signup-email").value;
+
+            if (!username || !password || !confirmPassword || !email) {
+                alert("Please fill in all required fields");
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                alert("Passwords do not match");
+                return;
+            }
+
+            // Validate email format
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                alert("Please enter a valid email address");
+                return;
+            }
+
+            // Get education value
+            let education = document.getElementById("signup-education").value;
+            if (education === "Others") {
+                education = document.getElementById("other-education").value;
+            }
+
+            try {
+                // Check if username already exists
+                const existingUser = await dbOperations.getUser(username);
+                if (existingUser) {
+                    alert("Username already exists. Please choose another one.");
+                    return;
+                }
+
+                // Create user data
+            const userData = {
+                username: username,
+                password: password,
+                    email: email,
+                    createdAt: new Date().toISOString()
+                };
+
+                // Create profile data
+                const profileData = {
+                    username: username,
+                    fullName: document.getElementById("signup-full-name").value,
+                    dob: document.getElementById("signup-dob").value,
+                    gender: document.getElementById("signup-gender").value,
+                    education: education,
+                    job: document.getElementById("signup-job").value,
+                    location: document.getElementById("signup-location").value,
+                    health: document.getElementById("signup-health").value,
+                    lastDepressionTest: null,
+                    depressionScore: null,
+                    depressionLevel: null
+                };
+
+                // Save to database
+                await dbOperations.addUser(userData);
+                await dbOperations.addProfile(profileData);
+
+                alert("Registration successful! Please login with your credentials.");
+                
+                // Clear all inputs
+                const inputs = document.querySelectorAll('input, textarea, select');
+                inputs.forEach(input => input.value = '');
+                
+                // Show login page
+                document.getElementById("credentials-container").classList.add("hidden");
+                document.getElementById("login-container").classList.remove("hidden");
+            } catch (error) {
+                console.error("Error during registration:", error);
+                if (error.name === 'ConstraintError') {
+                    alert("Username or email already exists. Please choose different credentials.");
+                } else {
+                    alert("There was an error during registration. Please try again.");
+            }
+        }
+        }
+
+        // Update login function to use database
+        async function login() {
+            const username = document.getElementById("login-username").value;
+            const password = document.getElementById("login-password").value;
+
+            if (!username || !password) {
+                alert("Please enter both username and password");
+                return;
+            }
+
+            // Check if it's an admin login
+            if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
+                document.getElementById("login-container").classList.add("hidden");
+                document.getElementById("admin-dashboard").classList.remove("hidden");
+                await loadAdminDashboard();
+                return;
+            }
+
+            try {
+                const userData = await dbOperations.getUser(username);
+                
+                if (!userData) {
+                    alert("No user found. Please register first.");
+                    return;
+                }
+
+                if (password === userData.password) {
+                    const profileData = await dbOperations.getProfile(username);
+
+                    // Populate profile data
+                    document.getElementById("profile-name").textContent = profileData.fullName;
+                    document.getElementById("profile-age").textContent = calculateAge(profileData.dob);
+                    document.getElementById("profile-gender").textContent = profileData.gender;
+                    document.getElementById("profile-education").textContent = profileData.education || 'Not specified';
+                    document.getElementById("profile-job").textContent = profileData.job || 'Not specified';
+                    document.getElementById("profile-location").textContent = profileData.location || 'Not specified';
+                    document.getElementById("profile-health").textContent = profileData.health || 'None';
+                    document.getElementById("profile-dob").value = profileData.dob;
+
+                    // Hide login and show dashboard
+                    document.getElementById("login-container").classList.add("hidden");
+                    document.getElementById("dashboard-container").classList.remove("hidden");
+
+                    // Check if depression test is needed
+                    if (!profileData.lastDepressionTest || 
+                        (new Date() - new Date(profileData.lastDepressionTest)) > (7 * 24 * 60 * 60 * 1000)) {
+                        setTimeout(() => {
+                            showDepressionTest();
+                        }, 500);
+                    }
+                } else {
+                    alert("Invalid password!");
+                }
+            } catch (error) {
+                console.error("Login error:", error);
+                alert("There was an error during login. Please try again.");
+            }
+        }
+
+        // Update depression test result storage
+        async function calculateDepressionScore() {
+            let score = 0;
+            for (let i = 0; i < depressionQuestions.length; i++) {
+                const radios = document.getElementsByName(`q${i}`);
+                let answered = false;
+                for (let radio of radios) {
+                    if (radio.checked) {
+                        score += parseInt(radio.value);
+                        answered = true;
+                    }
+                }
+                if (!answered) {
+                    alert(`Please answer Question ${i + 1}.`);
+                    return;
+                }
+            }
+
+            let interpretation = "";
+            if (score <= 4) {
+                interpretation = "Minimal or No Depression";
+            } else if (score <= 9) {
+                interpretation = "Mild Depression";
+            } else if (score <= 14) {
+                interpretation = "Moderate Depression";
+            } else if (score <= 19) {
+                interpretation = "Moderately Severe Depression";
+            } else {
+                interpretation = "Severe Depression";
+            }
+
+            try {
+                const username = document.getElementById("login-username").value;
+                const currentDate = new Date().toISOString();
+
+                // Save questionnaire result
+                await dbOperations.addQuestionnaireResult({
+                    username: username,
+                    date: currentDate,
+                    score: score,
+                    level: interpretation,
+                    answers: Array.from(document.querySelectorAll('input[type="radio"]:checked')).map(radio => ({
+                        question: depressionQuestions[parseInt(radio.name.substring(1))],
+                        answer: radio.value
+                    }))
+                });
+
+                // Update profile with latest test result
+                const profileData = await dbOperations.getProfile(username);
+                profileData.lastDepressionTest = currentDate;
+                profileData.depressionScore = score;
+                profileData.depressionLevel = interpretation;
+                await dbOperations.addProfile(profileData);
+
+                // Update UI
+                document.getElementById("profile-last-test").textContent = new Date().toLocaleDateString();
+                document.getElementById("profile-depression-level").textContent = interpretation;
+                document.getElementById("profile-depression-score").textContent = score;
+
+                document.getElementById('depressionResult').innerHTML = `
+                    <strong>Your Score: ${score}</strong><br>
+                    <p>${interpretation}</p>
+                    <button onclick="closeDepressionTest()" style="margin-top: 20px;">Close</button>
+                `;
+            } catch (error) {
+                console.error("Error saving depression test results:", error);
+                alert("There was an error saving your test results. Please try again.");
+            }
+        }
+
+        // Update profile view to use database
+        async function showProfile() {
+            document.getElementById("dashboard-container").classList.add("hidden");
+            
+            try {
+                const username = document.getElementById("login-username").value;
+                const profileData = await dbOperations.getProfile(username);
+                const questionnaireHistory = await dbOperations.getQuestionnaireHistory(username);
+                
+                // Update profile information
+                document.getElementById("profile-last-test").textContent = profileData.lastDepressionTest ? 
+                    new Date(profileData.lastDepressionTest).toLocaleDateString() : 'Never taken';
+                document.getElementById("profile-depression-level").textContent = profileData.depressionLevel || 'Not tested';
+                document.getElementById("profile-depression-score").textContent = profileData.depressionScore || 'Not tested';
+                
+                // Remove any existing history div
+                const existingHistory = document.querySelector('.depression-history');
+                if (existingHistory) {
+                    existingHistory.remove();
+                }
+                
+                // Show questionnaire history if available
+                if (questionnaireHistory && questionnaireHistory.length > 0) {
+                    const historyDiv = document.createElement('div');
+                    historyDiv.className = 'depression-history';
+                    historyDiv.innerHTML = '<h3>Your Depression Test History</h3>';
+                    
+                    // Create chart container
+                    const chartContainer = document.createElement('div');
+                    chartContainer.className = 'depression-chart-container';
+                    historyDiv.appendChild(chartContainer);
+                    
+                    // Create history list container
+                    const historyList = document.createElement('div');
+                    historyList.className = 'depression-history-list';
+                    
+                    // Sort history by date
+                    questionnaireHistory.sort((a, b) => new Date(a.date) - new Date(b.date));
+                    
+                    // Prepare data for chart
+                    const dates = questionnaireHistory.map(test => 
+                        new Date(test.date).toLocaleDateString()
+                    );
+                    const scores = questionnaireHistory.map(test => test.score);
+                    
+                    // Create chart
+                    const ctx = document.createElement('canvas');
+                    chartContainer.appendChild(ctx);
+                    
+                    new Chart(ctx, {
+                        type: 'line',
+                        data: {
+                            labels: dates,
+                            datasets: [{
+                                label: 'Your Depression Score',
+                                data: scores,
+                                borderColor: '#39FF14',
+                                backgroundColor: 'rgba(57, 255, 20, 0.1)',
+                                tension: 0.4,
+                                fill: true
+                            }]
+                        },
+                        options: {
+                            responsive: true,
+                            maintainAspectRatio: false,
+                            plugins: {
+                                legend: {
+                                    labels: {
+                                        color: '#39FF14'
+                                    }
+                                },
+                                tooltip: {
+                                    callbacks: {
+                                        label: function(context) {
+                                            const test = questionnaireHistory[context.dataIndex];
+                                            return `Score: ${test.score} (${test.level})`;
+                                        }
+                                    }
+                                }
+                            },
+                            scales: {
+                                y: {
+                                    beginAtZero: true,
+                                    max: 27,
+                                    ticks: {
+                                        color: '#39FF14'
+                                    },
+                                    grid: {
+                                        color: 'rgba(57, 255, 20, 0.1)'
+                                    }
+                                },
+                                x: {
+                                    ticks: {
+                                        color: '#39FF14'
+                                    },
+                                    grid: {
+                                        color: 'rgba(57, 255, 20, 0.1)'
+                                    }
+                                }
+                            }
+                        }
+                    });
+
+                    // Add history items
+                    questionnaireHistory.forEach(test => {
+                        const historyItem = document.createElement('div');
+                        historyItem.className = 'depression-history-item';
+                        historyItem.innerHTML = `
+                            <strong>${new Date(test.date).toLocaleDateString()}</strong><br>
+                            Score: ${test.score} (${test.level})
+                        `;
+                        historyList.appendChild(historyItem);
+                    });
+                    
+                    historyDiv.appendChild(historyList);
+                    document.getElementById('profile-container').appendChild(historyDiv);
+                }
+            } catch (error) {
+                console.error("Error loading profile data:", error);
+            }
+            
+            document.getElementById("profile-container").classList.remove("hidden");
+        }
+
+        function showSignup() {
+            document.getElementById("login-container").classList.add("hidden");
+            document.getElementById("signup-container").classList.remove("hidden");
+        }
+
+        function showDetails() {
+            document.getElementById("signup-container").classList.add("hidden");
+            document.getElementById("details-container").classList.remove("hidden");
+        }
+
+        function showCredentials() {
+            // Validate profile information
+            const fullName = document.getElementById("signup-full-name").value;
+            const dob = document.getElementById("signup-dob").value;
+            const gender = document.getElementById("signup-gender").value;
+
+            if (!fullName || !dob || !gender) {
+                alert("Please fill in all required fields (Name, Date of Birth, and Gender)");
+                return;
+            }
+
+            document.getElementById("signup-container").classList.add("hidden");
+            document.getElementById("credentials-container").classList.remove("hidden");
+        }
+
+        function logout() {
+            // Clear all form fields
+            const inputs = document.querySelectorAll('input');
+            inputs.forEach(input => input.value = '');
+            
+            // Clear profile data
+            const profileSpans = [
+                "profile-name",
+                "profile-age",
+                "profile-gender",
+                "profile-education",
+                "profile-job",
+                "profile-location",
+                "profile-health"
+            ];
+            profileSpans.forEach(id => {
+                const el = document.getElementById(id);
+                if (el) el.innerText = '';
+            });
+            
+            // Reset profile images
+            document.getElementById('profile-pic').src = 'https://via.placeholder.com/150';
+            document.getElementById('profile-view-pic').src = 'https://via.placeholder.com/150';
+            
+            // Hide all containers except login
+            document.getElementById("dashboard-container").classList.add("hidden");
+            document.getElementById("profile-container").classList.add("hidden");
+            document.getElementById("profile-edit-container").classList.add("hidden");
+            document.getElementById("signup-container").classList.add("hidden");
+            document.getElementById("details-container").classList.add("hidden");
+            document.getElementById("login-container").classList.remove("hidden");
+        }
+
+        function showMoodTracker() {
+            alert("Mood Tracker feature coming soon!");
+        }
+
+        function startMeditation() {
+            alert("Meditation feature coming soon!");
+        }
+
+        function openJournal() {
+            alert("Journal feature coming soon!");
+        }
+
+        function calculateAge(birthDate) {
+            if (!birthDate) return '';
+            const today = new Date();
+            const birth = new Date(birthDate);
+            let age = today.getFullYear() - birth.getFullYear();
+            const monthDiff = today.getMonth() - birth.getMonth();
+            if (monthDiff < 0 || (monthDiff === 0 && today.getDate() < birth.getDate())) {
+                age--;
+            }
+            return age;
+        }
+
+        function previewImage(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    document.getElementById('profile-pic').src = e.target.result;
+                    document.getElementById('profile-view-pic').src = e.target.result;
+                };
+                reader.readAsDataURL(file);
+            }
+        }
+
+        function editProfile() {
+            document.getElementById("profile-container").classList.add("hidden");
+            document.getElementById("profile-edit-container").classList.remove("hidden");
+            
+            // Populate existing data if available
+            document.getElementById("edit-full-name").value = document.getElementById("profile-name").innerText || '';
+            document.getElementById("edit-dob").value = document.getElementById("profile-dob").value || '';
+            document.getElementById("edit-gender").value = document.getElementById("profile-gender").innerText || '';
+            document.getElementById("edit-education").value = document.getElementById("profile-education").innerText || '';
+            document.getElementById("edit-job").value = document.getElementById("profile-job").innerText || '';
+            document.getElementById("edit-location").value = document.getElementById("profile-location").innerText || '';
+            document.getElementById("edit-health").value = document.getElementById("profile-health").innerText || '';
+        }
+
+        function saveProfile() {
+            try {
+                // Get all the values
+                const fullName = document.getElementById("edit-full-name").value;
+                const dob = document.getElementById("edit-dob").value;
+                const gender = document.getElementById("edit-gender").value;
+                const education = document.getElementById("edit-education").value;
+                const job = document.getElementById("edit-job").value;
+                const location = document.getElementById("edit-location").value;
+                const health = document.getElementById("edit-health").value;
+
+                // Validate required fields
+                if (!fullName || !dob || !gender) {
+                    alert("Please fill in all required fields (Name, Date of Birth, and Gender)");
+                    return;
+                }
+
+                // Calculate age
+                const age = calculateAge(dob);
+
+                // Update profile view
+                document.getElementById("profile-name").textContent = fullName;
+                document.getElementById("profile-age").textContent = age;
+                document.getElementById("profile-gender").textContent = gender;
+                document.getElementById("profile-education").textContent = education || 'Not specified';
+                document.getElementById("profile-job").textContent = job || 'Not specified';
+                document.getElementById("profile-location").textContent = location || 'Not specified';
+                document.getElementById("profile-health").textContent = health || 'None';
+
+                // Store DOB for future reference
+                document.getElementById("profile-dob").value = dob;
+
+                // Show success message
+                alert("Profile saved successfully!");
+
+                // Show profile view
+                document.getElementById("profile-edit-container").classList.add("hidden");
+                document.getElementById("profile-container").classList.remove("hidden");
+            } catch (error) {
+                console.error("Error saving profile:", error);
+                alert("There was an error saving your profile. Please try again.");
+            }
+        }
+
+        function backToDashboard() {
+            document.getElementById("profile-container").classList.add("hidden");
+            document.getElementById("profile-edit-container").classList.add("hidden");
+            document.getElementById("dashboard-container").classList.remove("hidden");
+        }
+
+        function togglePassword(inputId) {
+            const passwordInput = document.getElementById(inputId);
+            const toggleButton = passwordInput.nextElementSibling;
+            
+            if (passwordInput.type === "password") {
+                passwordInput.type = "text";
+                toggleButton.textContent = "👁️‍🗨️";
+            } else {
+                passwordInput.type = "password";
+                toggleButton.textContent = "👁️";
+            }
+        }
+
+        function forgotPassword() {
+            alert("Please contact support at siddharthsingh1310@gmail.com to reset your password.");
+        }
+
+        function toggleOtherEducation() {
+            const select = document.getElementById('signup-education');
+            const otherInput = document.getElementById('other-education');
+            if (select.value === 'Others') {
+                otherInput.classList.remove('hidden');
+            } else {
+                otherInput.classList.add('hidden');
+                otherInput.value = '';
+            }
+        }
+
+        // Depression Test Variables and Functions
+        const depressionQuestions = [
+            "Little interest or pleasure in doing things.",
+            "Feeling down, depressed, or hopeless.",
+            "Trouble falling or staying asleep, or sleeping too much.",
+            "Feeling tired or having little energy.",
+            "Poor appetite or overeating.",
+            "Feeling bad about yourself — or that you are a failure or have let yourself or your family down.",
+            "Trouble concentrating on things, such as reading or watching television.",
+            "Moving or speaking so slowly that other people could have noticed? Or the opposite — being fidgety or restless?",
+            "Thoughts that you would be better off dead or hurting yourself."
+        ];
+
+        const depressionOptions = [
+            { text: "Not at all (0)", value: 0 },
+            { text: "Several days (1)", value: 1 },
+            { text: "More than half the days (2)", value: 2 },
+            { text: "Nearly every day (3)", value: 3 }
+        ];
+
+        function initializeDepressionTest() {
+            const questionsDiv = document.getElementById('depressionQuestions');
+            questionsDiv.innerHTML = '';
+
+            depressionQuestions.forEach((q, index) => {
+                const div = document.createElement('div');
+                div.className = 'depression-test-question';
+                div.innerHTML = `<strong>Q${index + 1}: ${q}</strong>`;
+                depressionOptions.forEach(opt => {
+                    div.innerHTML += `
+                        <label class="depression-test-option">
+                            <input type="radio" name="q${index}" value="${opt.value}" required> ${opt.text}
+                        </label>`;
+                });
+                questionsDiv.appendChild(div);
+            });
+        }
+
+        function showDepressionTest() {
+            const modal = document.getElementById('depressionTestModal');
+            modal.style.display = 'block';
+            modal.style.opacity = '1';
+            initializeDepressionTest();
+            document.getElementById('depressionResult').innerHTML = ''; // Clear previous results
+        }
+
+        function closeDepressionTest() {
+            const modal = document.getElementById('depressionTestModal');
+            modal.style.opacity = '0';
+            setTimeout(() => {
+                modal.style.display = 'none';
+            }, 300);
+        }
+
+        // Admin functionality
+        const ADMIN_CREDENTIALS = {
+            username: "Sidd_13",
+            password: "sidd123" // In a real application, this should be hashed and stored securely
+        };
+
+        function showAdminLogin() {
+            document.getElementById("login-container").classList.add("hidden");
+            document.getElementById("admin-login-container").classList.remove("hidden");
+        }
+
+        function backToUserLogin() {
+            document.getElementById("admin-login-container").classList.add("hidden");
+            document.getElementById("login-container").classList.remove("hidden");
+        }
+
+        async function adminLogin() {
+            const username = document.getElementById("admin-username").value;
+            const password = document.getElementById("admin-password").value;
+
+            if (username === ADMIN_CREDENTIALS.username && password === ADMIN_CREDENTIALS.password) {
+                document.getElementById("admin-login-container").classList.add("hidden");
+                document.getElementById("admin-dashboard").classList.remove("hidden");
+                await loadAdminDashboard();
+            } else {
+                alert("Invalid admin credentials!");
+            }
+        }
+
+        function adminLogout() {
+            document.getElementById("admin-dashboard").classList.add("hidden");
+            document.getElementById("admin-login-container").classList.remove("hidden");
+            document.getElementById("admin-username").value = "";
+            document.getElementById("admin-password").value = "";
+        }
+
+        async function loadAdminDashboard() {
+            try {
+                // Get all users
+                const users = await getAllUsers();
+                const profiles = await getAllProfiles();
+                const questionnaireResults = await getAllQuestionnaireResults();
+
+                // Update statistics
+                updateStatistics(users, profiles, questionnaireResults);
+
+                // Update users table
+                updateUsersTable(users, profiles);
+
+                // Update charts
+                updateCharts(questionnaireResults);
+            } catch (error) {
+                console.error("Error loading admin dashboard:", error);
+                alert("Error loading admin dashboard data");
+            }
+        }
+
+        async function getAllUsers() {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction(['users'], 'readonly');
+                const store = transaction.objectStore('users');
+                const request = store.getAll();
+
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        async function getAllProfiles() {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction(['profiles'], 'readonly');
+                const store = transaction.objectStore('profiles');
+                const request = store.getAll();
+
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        async function getAllQuestionnaireResults() {
+            return new Promise((resolve, reject) => {
+                const transaction = db.transaction(['questionnaire'], 'readonly');
+                const store = transaction.objectStore('questionnaire');
+                const request = store.getAll();
+
+                request.onsuccess = () => resolve(request.result);
+                request.onerror = () => reject(request.error);
+            });
+        }
+
+        function updateStatistics(users, profiles, questionnaireResults) {
+            // Total users
+            document.getElementById("total-users").textContent = users.length;
+
+            // Active users (users who have taken at least one test)
+            const activeUsers = new Set(questionnaireResults.map(result => result.username)).size;
+            document.getElementById("active-users").textContent = activeUsers;
+
+            // Average depression score
+            const scores = questionnaireResults.map(result => result.score);
+            const avgScore = scores.length > 0 ? 
+                (scores.reduce((a, b) => a + b, 0) / scores.length).toFixed(1) : 0;
+            document.getElementById("avg-depression-score").textContent = avgScore;
+        }
+
+        function updateUsersTable(users, profiles) {
+            const tbody = document.getElementById("users-table-body");
+            tbody.innerHTML = "";
+
+            users.forEach(user => {
+                const profile = profiles.find(p => p.username === user.username);
+                const row = document.createElement("tr");
+                row.innerHTML = `
+                    <td>${user.username}</td>
+                    <td>${profile?.fullName || 'N/A'}</td>
+                    <td>${user.email}</td>
+                    <td>${profile?.lastDepressionTest ? new Date(profile.lastDepressionTest).toLocaleDateString() : 'Never'}</td>
+                    <td>${profile?.depressionLevel || 'Not tested'}</td>
+                    <td>${profile?.depressionScore || 'N/A'}</td>
+                    <td class="action-buttons">
+                        <button class="view-details-btn" onclick="viewUserDetails('${user.username}')">View Details</button>
+                        <button class="delete-user-btn" onclick="deleteUser('${user.username}')">Delete</button>
+                    </td>
+                `;
+                tbody.appendChild(row);
+            });
+        }
+
+        function updateCharts(questionnaireResults) {
+            // Depression Level Distribution Chart
+            const depressionLevels = {
+                "Minimal or No Depression": 0,
+                "Mild Depression": 0,
+                "Moderate Depression": 0,
+                "Moderately Severe Depression": 0,
+                "Severe Depression": 0
+            };
+
+            questionnaireResults.forEach(result => {
+                depressionLevels[result.level]++;
+            });
+
+            new Chart(document.getElementById("depression-distribution-chart"), {
+                type: 'pie',
+                data: {
+                    labels: Object.keys(depressionLevels),
+                    datasets: [{
+                        data: Object.values(depressionLevels),
+                        backgroundColor: [
+                            '#39FF14',
+                            '#50FF30',
+                            '#70FF50',
+                            '#90FF70',
+                            '#B0FF90'
+                        ]
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#39FF14'
+                            }
+                        }
+                    }
+                }
+            });
+
+            // Test Frequency Chart
+            const testDates = {};
+            questionnaireResults.forEach(result => {
+                const date = new Date(result.date).toLocaleDateString();
+                testDates[date] = (testDates[date] || 0) + 1;
+            });
+
+            new Chart(document.getElementById("test-frequency-chart"), {
+                type: 'line',
+                data: {
+                    labels: Object.keys(testDates),
+                    datasets: [{
+                        label: 'Tests Taken',
+                        data: Object.values(testDates),
+                        borderColor: '#39FF14',
+                        backgroundColor: 'rgba(57, 255, 20, 0.1)',
+                        fill: true
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    plugins: {
+                        legend: {
+                            labels: {
+                                color: '#39FF14'
+                            }
+                        }
+                    },
+                    scales: {
+                        y: {
+                            beginAtZero: true,
+                            ticks: {
+                                color: '#39FF14'
+                            },
+                            grid: {
+                                color: 'rgba(57, 255, 20, 0.1)'
+                            }
+                        },
+                        x: {
+                            ticks: {
+                                color: '#39FF14'
+                            },
+                            grid: {
+                                color: 'rgba(57, 255, 20, 0.1)'
+                            }
+                        }
+                    }
+                }
+            });
+        }
+
+        async function viewUserDetails(username) {
+            try {
+                const profile = await dbOperations.getProfile(username);
+                const questionnaireHistory = await dbOperations.getQuestionnaireHistory(username);
+                
+                let details = `Username: ${username}\n`;
+                details += `Name: ${profile.fullName}\n`;
+                details += `Email: ${profile.email}\n`;
+                details += `Last Test: ${profile.lastDepressionTest ? new Date(profile.lastDepressionTest).toLocaleDateString() : 'Never'}\n`;
+                details += `Depression Level: ${profile.depressionLevel || 'Not tested'}\n`;
+                details += `Score: ${profile.depressionScore || 'N/A'}\n\n`;
+                details += `Test History:\n`;
+                
+                questionnaireHistory.forEach(test => {
+                    details += `${new Date(test.date).toLocaleDateString()}: Score ${test.score} (${test.level})\n`;
+                });
+
+                alert(details);
+            } catch (error) {
+                console.error("Error viewing user details:", error);
+                alert("Error loading user details");
+            }
+        }
+
+        async function deleteUser(username) {
+            if (confirm(`Are you sure you want to delete user ${username}? This action cannot be undone.`)) {
+                try {
+                    const transaction = db.transaction(['users', 'profiles', 'questionnaire'], 'readwrite');
+                    
+                    // Delete user
+                    const usersStore = transaction.objectStore('users');
+                    usersStore.delete(username);
+
+                    // Delete profile
+                    const profilesStore = transaction.objectStore('profiles');
+                    profilesStore.delete(username);
+
+                    // Delete questionnaire results
+                    const questionnaireStore = transaction.objectStore('questionnaire');
+                    const index = questionnaireStore.index('username');
+                    const request = index.getAllKeys(username);
+                    
+                    request.onsuccess = () => {
+                        const keys = request.result;
+                        keys.forEach(key => {
+                            questionnaireStore.delete(key);
+                        });
+                    };
+
+                    transaction.oncomplete = () => {
+                        alert(`User ${username} deleted successfully`);
+                        loadAdminDashboard();
+                    };
+
+                    transaction.onerror = () => {
+                        throw new Error("Transaction failed");
+                    };
+                } catch (error) {
+                    console.error("Error deleting user:", error);
+                    alert("Error deleting user");
+                }
+            }
+        }
+
+        function filterUsers() {
+            const searchTerm = document.getElementById("user-search").value.toLowerCase();
+            const depressionFilter = document.getElementById("depression-filter").value;
+            const rows = document.querySelectorAll("#users-table-body tr");
+
+            rows.forEach(row => {
+                const username = row.cells[0].textContent.toLowerCase();
+                const depressionLevel = row.cells[4].textContent;
+                const matchesSearch = username.includes(searchTerm);
+                const matchesDepression = !depressionFilter || depressionLevel === depressionFilter;
+
+                row.style.display = matchesSearch && matchesDepression ? "" : "none";
+            });
+        }
+
+        // Games Page Functions
+        function showGames() {
+            document.getElementById("gamesPage").style.display = "block";
+            showGameSelection();
+        }
+
+        function showGameSelection() {
+            document.querySelector(".game-selection").style.display = "grid";
+            document.getElementById("gratitudeGame").style.display = "none";
+            document.getElementById("memoryGame").style.display = "none";
+            document.getElementById("mindGarden").style.display = "none";
+        }
+
+        function selectGame(gameType) {
+            document.querySelector(".game-selection").style.display = "none";
+            if (gameType === 'gratitude') {
+                document.getElementById("gratitudeGame").style.display = "block";
+            } else if (gameType === 'memory') {
+                document.getElementById("memoryGame").style.display = "block";
+                initMemoryGame();
+            } else if (gameType === 'garden') {
+                document.getElementById("mindGarden").style.display = "block";
+            }
+        }
+
+        function closeGames() {
+            document.getElementById("gamesPage").style.display = "none";
+            clearInterval(wordInterval);
+            clearInterval(gameInterval);
+            document.getElementById("gameArea").innerHTML = "";
+            showGameSelection();
+        }
+
+        // Gratitude Game Variables and Functions
+        const positiveWords = [
+            "Family", "Friends", "Laughter", "Sunrise", "Hope", "Music", "Books",
+            "Nature", "Love", "Courage", "Peace", "Joy", "Success", "Kindness",
+            "Smile", "Dream", "Health", "Adventure", "Freedom", "Sunshine"
+        ];
+
+        let gameScore = 0;
+        let gameTimeLeft = 30;
+        let gameInterval, wordInterval;
+
+        function startGratitudeGame() {
+            // Reset game state
+            document.getElementById("gameScore").innerText = "0";
+            document.getElementById("gameTime").innerText = gameTimeLeft = 30;
+            gameScore = 0;
+            document.getElementById("gameArea").innerHTML = "";
+
+            // Start game intervals
+            wordInterval = setInterval(spawnWord, 800);
+            gameInterval = setInterval(() => {
+                gameTimeLeft--;
+                document.getElementById("gameTime").innerText = gameTimeLeft;
+                if (gameTimeLeft <= 0) endGratitudeGame();
+            }, 1000);
+        }
+
+        function endGratitudeGame() {
+            clearInterval(wordInterval);
+            clearInterval(gameInterval);
+            alert("⏱️ Time's up! Your final score is: " + gameScore);
+        }
+
+        function spawnWord() {
+            const gameArea = document.getElementById("gameArea");
+            const word = document.createElement("div");
+            word.classList.add("word");
+            word.innerText = positiveWords[Math.floor(Math.random() * positiveWords.length)];
+            
+            // Random position within the game area
+            const maxX = gameArea.offsetWidth - 150; // Account for word width
+            const maxY = gameArea.offsetHeight - 50; // Account for word height
+            const randomX = Math.random() * maxX;
+            const randomY = Math.random() * maxY;
+            
+            word.style.left = randomX + "px";
+            word.style.top = randomY + "px";
+
+            word.onclick = function () {
+                gameScore++;
+                document.getElementById("gameScore").innerText = gameScore;
+                word.remove();
+            };
+
+            gameArea.appendChild(word);
+
+            // Remove after animation ends
+            setTimeout(() => word.remove(), 6000);
+        }
+
+        // Memory Game Variables and Functions
+        const memoryWords = [
+            "😊", "🌿", "🎵", "❤️", "📖", "🌅",
+            "🌟", "🌈", "🎨", "🎮", "🎭", "🎪"
+        ];
+
+        let memoryCards = [];
+        let flippedCards = [];
+        let matchedCount = 0;
+
+        function shuffle(array) {
+            return array.sort(() => Math.random() - 0.5);
+        }
+
+        function initMemoryGame() {
+            const board = document.getElementById('memoryGameBoard');
+            const status = document.getElementById('memoryStatus');
+            board.innerHTML = '';
+            status.innerText = 'Find all the matches!';
+            matchedCount = 0;
+            flippedCards = [];
+
+            const allWords = shuffle([...memoryWords, ...memoryWords]);
+
+            memoryCards = allWords.map((text, index) => {
+                const card = document.createElement('div');
+                card.classList.add('memory-card');
+                card.dataset.index = index;
+                card.dataset.text = text;
+                card.innerHTML = `<span class="hidden-text">${text}</span>`;
+                card.addEventListener('click', () => flipMemoryCard(card));
+                return card;
+            });
+
+            memoryCards.forEach(card => board.appendChild(card));
+        }
+
+        function flipMemoryCard(card) {
+            if (flippedCards.length === 2 || card.classList.contains('flipped') || card.classList.contains('matched')) return;
+
+            card.classList.add('flipped');
+            card.querySelector('.hidden-text').style.visibility = 'visible';
+            flippedCards.push(card);
+
+            if (flippedCards.length === 2) {
+                const [card1, card2] = flippedCards;
+                if (card1.dataset.text === card2.dataset.text) {
+                    card1.classList.add('matched');
+                    card2.classList.add('matched');
+                    matchedCount++;
+                    document.getElementById('memoryStatus').innerText = "Nice! Keep going!";
+                    if (matchedCount === memoryWords.length) {
+                        document.getElementById('memoryStatus').innerText = "🎉 You matched all! Well done!";
+                    }
+                } else {
+                    setTimeout(() => {
+                        card1.classList.remove('flipped');
+                        card2.classList.remove('flipped');
+                        card1.querySelector('.hidden-text').style.visibility = 'hidden';
+                        card2.querySelector('.hidden-text').style.visibility = 'hidden';
+                    }, 800);
+                }
+                flippedCards = [];
+            }
+        }
+
+        // Mind Garden Game Functions
+        const quotes = {
+            happy: "Keep that smile alive — it lights up your world! 🌞",
+            sad: "It's okay to feel down. This plant grows stronger with your tears. 🌧️",
+            anxious: "Take a deep breath. You're safe here. 🌬️",
+            calm: "Your peace is powerful. Let it bloom. 🌼",
+            lonely: "You're not alone — even this seed needs you. 💚"
+        };
+
+        function growPlant() {
+            const mood = document.getElementById("moodSelect").value;
+            const garden = document.getElementById("garden");
+            const quoteBox = document.getElementById("quote");
+
+            if (!mood) {
+                alert("Please select a mood.");
+                return;
+            }
+
+            garden.style.display = "block";
+            quoteBox.innerText = quotes[mood];
+        }
+    </script>
+</body>
+</html> 
